@@ -132,6 +132,7 @@ function CheckPair(div){
         if (Math.floor(Date.now()/1000) > LastClickedBtnSeconds + 3){
             Points -= 10;
             PointsDiv.innerHTML = `Pontszám:${Points}/1000`;
+            PointsDiv.value = Points;
         }
         if (Pairs == Width * Height / 2) {
             setTimeout(EndGame, 200);
@@ -141,6 +142,7 @@ function CheckPair(div){
         Points -= 20;
         Points = Points < 0 ? 0 : Points;
         PointsDiv.innerHTML = `Pontszám:${Points}/1000`;
+        PointsDiv.value = Points;
         for (y = 0; y < PlayButtons.length; y++){
             for (x = 0; x < PlayButtons[y].length; x++){
                 PlayButtons[y][x].children[0].flippable = false;
@@ -178,5 +180,6 @@ function Restart(){
     Points = 1000;
     Pairs = 0;
     PointsDiv.innerHTML = `Pontszám:${Points}/1000`;
+    PointsDiv.value = 1000;
     LastClickedBtn = null
 }

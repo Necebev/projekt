@@ -1,7 +1,9 @@
+const RestartBtn = document.getElementById("restart");
+const PointsDiv = document.getElementById("points");
 const SizeContainer = document.getElementById("sizeContainer");
 const Container = document.getElementById("container");
 const SizeButtons = document.getElementsByClassName("card");
-const ImageCollections = { "teachers": ["angela.jpg", "erzsi.jpg", "geri.jpg", "isti.jpg", "kaci.jpg", "orgo.jpg", "trieb.jpg", "varadi.jpg", "angela.jpg", "erzsi.jpg", "geri.jpg", "isti.jpg", "kaci.jpg", "orgo.jpg", "trieb.jpg", "varadi.jpg"]};
+var ImageCollections = { "teachers": ["angela.jpg", "erzsi.jpg", "geri.jpg", "isti.jpg", "kaci.jpg", "orgo.jpg", "trieb.jpg", "varadi.jpg", "angela.jpg", "erzsi.jpg", "geri.jpg", "isti.jpg", "kaci.jpg", "orgo.jpg", "trieb.jpg", "varadi.jpg"]};
 
 var PlayButtons = [];
 var Pairs = 0;
@@ -18,6 +20,8 @@ for (i = 0; i < SizeButtons.length; i++){
     SizeButtons[i].addEventListener("click", () => SetupGame(SizeButtons[x].innerHTML));    
 }
 
+RestartBtn.addEventListener("click", Restart);
+
 Resize();
 window.onresize = Resize;
 
@@ -28,6 +32,11 @@ function SetupGame(Size){
 
     Width = parseInt(Size.slice(0,Size.indexOf("x")));
     Height = parseInt(Size.slice(Size.indexOf("x") + 1, Size.length));
+
+    RestartBtn.style.visibility = "visible";
+    PointsDiv.style.visibility = "visible";
+
+    ImageCollections = { "teachers": ["angela.jpg", "erzsi.jpg", "geri.jpg", "isti.jpg", "kaci.jpg", "orgo.jpg", "trieb.jpg", "varadi.jpg", "angela.jpg", "erzsi.jpg", "geri.jpg", "isti.jpg", "kaci.jpg", "orgo.jpg", "trieb.jpg", "varadi.jpg"] };
 
     CreateButtons(Width, Height);
 }
@@ -111,25 +120,27 @@ function Resize(){
 }
 
 function CheckPair(div){
-    if(LastClickedBtn == null){
+    if(LastClickedBtn == null){ // ha ez az első megnyomott gomb
         LastClickedBtn = div;
         LastClickedBtnSeconds = Math.floor(Date.now()/1000);
     }
-    else if (div.children[1].style.backgroundImage == LastClickedBtn.children[1].style.backgroundImage){
-        div.style.visibility = "hidden";
-        LastClickedBtn.style.visibility = "hidden";
+    else if (div.children[1].style.backgroundImage == LastClickedBtn.children[1].style.backgroundImage){ // ha megegyezik a két kiválasztott kártya
+        div.flippable = false;
+        LastClickedBtn.flippable = false;
         LastClickedBtn = null;
         Pairs++;
         if (Math.floor(Date.now()/1000) > LastClickedBtnSeconds + 3){
             Points -= 10;
+            PointsDiv.innerHTML = `Pontszám:${Points}/1000`;
         }
         if (Pairs == Width * Height / 2) {
             setTimeout(EndGame, 200);
         }
     }
-    else if (div.children[1].style.backgroundImage != LastClickedBtn.children[1].style.backgroundImage) {
+    else if (div.children[1].style.backgroundImage != LastClickedBtn.children[1].style.backgroundImage) { // ha nem egyezik meg a két -||-
         Points -= 20;
         Points = Points < 0 ? 0 : Points;
+        PointsDiv.innerHTML = `Pontszám:${Points}/1000`;
         for (y = 0; y < PlayButtons.length; y++){
             for (x = 0; x < PlayButtons[y].length; x++){
                 PlayButtons[y][x].children[0].flippable = false;
@@ -146,10 +157,26 @@ function CheckPair(div){
                     PlayButtons[y][x].children[0].flippable = true;
                 }
             }
-        },1000);
+        },1500);
     }
 }
 
 function EndGame(){
-    alert("Nyertél! " + Points);
+    alert("Nyertél! ");
+}
+
+function Restart(){
+    for (y = 0; y < PlayButtons.length; y++) {
+        for (x = 0; x < PlayButtons[y].length; x++) {
+            Container.removeChild(PlayButtons[y][x]);
+        }
+    }
+    SizeContainer.style.visibility = "visible";
+    Container.style.visibility = "hidden";
+    RestartBtn.style.visibility = "hidden";
+    PointsDiv.style.visibility = "hidden";
+    Points = 1000;
+    Pairs = 0;
+    PointsDiv.innerHTML = `Pontszám:${Points}/1000`;
+    LastClickedBtn = null
 }

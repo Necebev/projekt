@@ -4,7 +4,7 @@ const SizeContainer = document.getElementById("sizeContainer");
 const Container = document.getElementById("container");
 const SizeButtons = document.getElementsByClassName("card");
 var ImageCollections = { "teachers": ["angela.jpg", "erzsi.jpg", "geri.jpg", "isti.jpg", "kaci.jpg", "orgo.jpg", "trieb.jpg", "varadi.jpg", "angela.jpg", "erzsi.jpg", "geri.jpg", "isti.jpg", "kaci.jpg", "orgo.jpg", "trieb.jpg", "varadi.jpg"]};
-
+// asd
 var PlayButtons = [];
 var Pairs = 0;
 

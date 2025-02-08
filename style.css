@@ -41,7 +41,7 @@ body{
 .card_inner{
     width: 100%;
     height: 100%;
-    transition: transform 1s;
+    transition: transform 0.75s;
     transform-style: preserve-3d;
     cursor: pointer;
     position: relative;
@@ -65,9 +65,6 @@ body{
     align-items: center;
     justify-content: center;
     user-select: none;
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
 }
 
 .back{
@@ -76,9 +73,6 @@ body{
     align-items: center;
     justify-content: center;
     user-select: none;
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
 }
 
 nav {
@@ -104,4 +98,37 @@ li {
 
 img{
     -webkit-user-drag: none;
+}
+
+/* Tooltip container */
+.theme , .card{
+    position: relative;
+    display: inline-block;
+}
+
+/* Tooltip text */
+.theme .tooltiptext, .card .tooltiptext {
+    font-size: 1.5vw;
+    visibility: hidden;
+    width: 15vw;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 16px;
+    left: 0;
+
+    /* Position the tooltip text */
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+
+    /* Fade in tooltip */
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.theme:hover .tooltiptext, .card:hover .tooltiptext {
+    visibility: visible;
+    opacity: 0.75;
 }

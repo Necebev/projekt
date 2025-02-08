@@ -9,18 +9,34 @@
 <body>
     <nav>
         <ul>
-            <li class="theme">blocks</li>
-            <li class="theme">items</li>
-            <li class="theme">mobs</li>
-            <li class="theme">foods</li>
+            <li class="theme" id="blocks">blocks
+                <span class="tooltiptext">Kattints rá a téma kiválasztásához!</span>
+            </li>
+            <li class="theme" id="items">items
+                <span class="tooltiptext">Kattints rá a téma kiválasztásához!</span>
+            </li>
+            <li class="theme" id="mobs">mobs
+                <span class="tooltiptext">Kattints rá a téma kiválasztásához!</span>
+            </li>
+            <li class="theme" id="foods">foods
+                <span class="tooltiptext">Kattints rá a téma kiválasztásához!</span>
+            </li>
             <li>toplist</li>
         </ul>
     </nav>
     <div id="sizeContainer">
-        <button class="card">4x4</button>
-        <button class="card">4x6</button>
-        <button class="card">6x6</button>
-        <button class="card">6x8</button>
+        <button class="card" id="4x4">4x4
+            <span class="tooltiptext">Kattints rá a méret kiválasztásához!</span>
+        </button>
+        <button class="card" id="4x6">4x6
+            <span class="tooltiptext">Kattints rá a méret kiválasztásához!</span>
+        </button>
+        <button class="card" id="6x6">6x6
+            <span class="tooltiptext">Kattints rá a méret kiválasztásához!</span>
+        </button>
+        <button class="card" id="6x8">6x8
+            <span class="tooltiptext">Kattints rá a méret kiválasztásához!</span>
+        </button>
     </div>
     <div id="container"></div>
     <button id="restart">Új játék</button>
@@ -35,11 +51,10 @@
     const ThemeButtons = document.getElementsByClassName("theme");
 
     var sources = [];
-    GetImages(sources);
 
     var BGImage = "<?php 
         $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
-        $das = $database->query("SELECT * FROM kartyamemoria.images WHERE ID = 9");
+        $das = $database->query("SELECT * FROM kartyamemoria.images WHERE ID = 1");
         $database->close();
         if ($row = $das->fetch_assoc()){
             echo "data:image/jpeg;base64," . base64_encode($row['image']);
@@ -66,18 +81,17 @@
     document.cookie = `points=${Points}`;
     document.cookie = `nev=${theme}`;
 
-
     for (i = 0; i < ThemeButtons.length; i++){
         let x = i;
         ThemeButtons[i].addEventListener("click", () => {
             if (!playing){
-                theme = ThemeButtons[x].innerHTML;
+                theme = ThemeButtons[x].id;
                 document.cookie = `nev=${theme}`;
+                for (j = 0; j < ThemeButtons.length; j++){
+                    ThemeButtons[j].style.color = "black";
+                }
+                ThemeButtons[x].style.color = "white";
             }
-            for (j = 0; j < ThemeButtons.length; j++){
-                ThemeButtons[j].style.color = "black";
-            }
-            ThemeButtons[x].style.color = "white";
         });
     }
 
@@ -107,7 +121,6 @@
         Height = parseInt(Size.slice(Size.indexOf("x") + 1, Size.length));
 
         PointsDiv.style.visibility = "visible";
-        RestartBtn.style.visibility = "visible";
 
         AllImages = [...sources[theme]]; // getting every image of the current theme
         Images = [];
@@ -241,7 +254,7 @@
                         PlayButtons[y][x].children[0].flippable = true;
                     }
                 }
-            },1500);
+            },1000);
         }
     }
 
@@ -270,64 +283,62 @@
         playing = false;
     }
 
-    function GetImages(sources){
-        sources["blocks"] = "<?php
-        $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
-        $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'blocks'");
-        $database->close();
-        $i = 0;
-        while ($row = $asd->fetch_assoc()) {
-            $i++;
-            if ($i == 24) { // a képek száma
-                echo "data:image/jpeg;base64," . base64_encode($row['image']);
-            } else {
-                echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
-            }
+    sources["blocks"] = "<?php
+    $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
+    $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'blocks'");
+    $database->close();
+    $i = 0;
+    while ($row = $asd->fetch_assoc()) {
+        $i++;
+        if ($i == 24) { // a képek száma
+            echo "data:image/jpeg;base64," . base64_encode($row['image']);
+        } else {
+            echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
         }
-        ?>".split("_");
-        sources["foods"] = "<?php
-        $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
-        $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'foods'");
-        $database->close();
-        $i = 0;
-        while ($row = $asd->fetch_assoc()) {
-            $i++;
-            if ($i == 24) { // a képek száma
-                echo "data:image/jpeg;base64," . base64_encode($row['image']);
-            } else {
-                echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
-            }
-        }
-        ?>".split("_");
-        sources["items"] = "<?php
-        $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
-        $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'items'");
-        $database->close();
-        $i = 0;
-        while ($row = $asd->fetch_assoc()) {
-            $i++;
-            if ($i == 24) { // a képek száma
-                echo "data:image/jpeg;base64," . base64_encode($row['image']);
-            } else {
-                echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
-            }
-        }
-        ?>".split("_");
-        sources["mobs"] = "<?php
-        $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
-        $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'mobs'");
-        $database->close();
-        $i = 0;
-        while ($row = $asd->fetch_assoc()) {
-            $i++;
-            if ($i == 24) { // a képek száma
-                echo "data:image/jpeg;base64," . base64_encode($row['image']);
-            } else {
-                echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
-            }
-        }
-        ?>".split("_");
     }
+    ?>".split("_");
+    sources["foods"] = "<?php
+    $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
+    $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'foods'");
+    $database->close();
+    $i = 0;
+    while ($row = $asd->fetch_assoc()) {
+        $i++;
+        if ($i == 24) { // a képek száma
+            echo "data:image/jpeg;base64," . base64_encode($row['image']);
+        } else {
+            echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
+        }
+    }
+    ?>".split("_");
+    sources["items"] = "<?php
+    $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
+    $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'items'");
+    $database->close();
+    $i = 0;
+    while ($row = $asd->fetch_assoc()) {
+        $i++;
+        if ($i == 24) { // a képek száma
+            echo "data:image/jpeg;base64," . base64_encode($row['image']);
+        } else {
+            echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
+        }
+    }
+    ?>".split("_");
+    sources["mobs"] = "<?php
+    $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
+    $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'mobs'");
+    $database->close();
+    $i = 0;
+    while ($row = $asd->fetch_assoc()) {
+        $i++;
+        if ($i == 24) { // a képek száma
+            echo "data:image/jpeg;base64," . base64_encode($row['image']);
+        } else {
+            echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
+        }
+    }
+    ?>".split("_");
 </script>
 <?php 
     // $database = mysqli_connect("localhost", "root", null, "mysql");

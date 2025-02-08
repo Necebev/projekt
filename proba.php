@@ -9,10 +9,10 @@
 <body>
     <nav>
         <ul>
-            <li>blocks</li>
-            <li>items</li>
-            <li>mobs</li>
-            <li>enchants</li>
+            <li class="theme">blocks</li>
+            <li class="theme">items</li>
+            <li class="theme">mobs</li>
+            <li class="theme">foods</li>
             <li>toplist</li>
         </ul>
     </nav>
@@ -32,22 +32,10 @@
     const SizeContainer = document.getElementById("sizeContainer");
     const Container = document.getElementById("container");
     const SizeButtons = document.getElementsByClassName("card");
+    const ThemeButtons = document.getElementsByClassName("theme");
 
-    var sources = "<?php 
-        $database = mysqli_connect("localhost", "root", null, "kartyamemoria"); 
-        $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE ID < 9;");
-        $database->close();
-        $i = 0;
-        while ($row = $asd->fetch_assoc()){
-            $i++;
-            if ($i == 8){ // a képek száma
-                echo "data:image/jpeg;base64," . base64_encode($row['image']);
-            }
-            else{
-                echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
-            }
-        }
-    ?>";
+    var sources = [];
+    GetImages(sources);
 
     var BGImage = "<?php 
         $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
@@ -58,12 +46,8 @@
         }
     ?>";
 
-    var images = sources.split('_');
-    var teacherImages = [];
-    for (i = 0; i < images.length; i++){
-        teacherImages[i] = images[i];
-        teacherImages[i+images.length] = images[i];
-    }
+    var AllImages = [];
+    var Images = [];
 
     var PlayButtons = [];
     var Pairs = 0;
@@ -71,13 +55,35 @@
     var Height;
     var Width;
 
+    var playing = false;
     var Points = 1000;
     var LastClickedBtn = null;
     var LastClickedBtnSeconds;
 
-    for (i = 0; i < SizeButtons.length; i++){
+    var theme = "blocks";
+    ThemeButtons[0].style.color = "white";
+
+    document.cookie = `points=${Points}`;
+    document.cookie = `nev=${theme}`;
+
+
+    for (i = 0; i < ThemeButtons.length; i++){
         let x = i;
-        SizeButtons[i].addEventListener("click", () => SetupGame(SizeButtons[x].innerHTML));    
+        ThemeButtons[i].addEventListener("click", () => {
+            if (!playing){
+                theme = ThemeButtons[x].innerHTML;
+                document.cookie = `nev=${theme}`;
+            }
+            for (j = 0; j < ThemeButtons.length; j++){
+                ThemeButtons[j].style.color = "black";
+            }
+            ThemeButtons[x].style.color = "white";
+        });
+    }
+
+    for (j = 0; j < SizeButtons.length; j++){
+        let x = j;
+        SizeButtons[j].addEventListener("click", () => SetupGame(SizeButtons[x].innerHTML));    
     }
 
     RestartBtn.addEventListener("click", Restart);
@@ -86,7 +92,9 @@
     window.onresize = Resize;
 
     function SetupGame(Size){
+        playing = true;
         Points = 1000;
+        document.cookie = `points=${Points}`;
         Pairs = 0;
         PointsDiv.innerHTML = `Pontszám:${Points}/1000`;
         PointsDiv.value = 1000;
@@ -99,16 +107,23 @@
         Height = parseInt(Size.slice(Size.indexOf("x") + 1, Size.length));
 
         PointsDiv.style.visibility = "visible";
+        RestartBtn.style.visibility = "visible";
 
-        for (i = 0; i < images.length; i++){
-            teacherImages[i] = images[i];
-            teacherImages[i+images.length] = images[i];
+        AllImages = [...sources[theme]]; // getting every image of the current theme
+        Images = [];
+
+        for (i = 0; i < Width * Height / 2; i++){
+            randomImageIND = Math.floor(Math.random() * AllImages.length);
+            Images[i] = AllImages[randomImageIND];
+            Images[i + Width * Height / 2] = AllImages[randomImageIND];
+            AllImages.splice(randomImageIND, 1);
         }
+        
 
-        CreateButtons(Width, Height);
+        CreateButtons(Width, Height, theme);
     }
 
-    function CreateButtons(width, height){
+    function CreateButtons(width, height, theme){
         grid = "";
         for (y = 0; y < height; y++){
             PlayButtons[y] = []
@@ -140,10 +155,9 @@
                 card_inner.appendChild(card_front);
 
                 // back of the card
-                randomBG = Math.floor(Math.random() * teacherImages.length);
-                card_back.src = teacherImages[randomBG];
-                teacherImages.splice(randomBG, 1);
-                console.log(teacherImages);
+                randomBG = Math.floor(Math.random() * Images.length);
+                card_back.src = Images[randomBG];
+                Images.splice(randomBG, 1);
                 card_back.classList.add("card_face");
                 card_back.classList.add("back");
                 card_inner.appendChild(card_back);
@@ -200,6 +214,7 @@
             if (Math.floor(Date.now()/1000) > LastClickedBtnSeconds + 3){
                 Points -= 10;
                 PointsDiv.innerHTML = `Pontszám:${Points}/1000`;
+                document.cookie = `points=${Points}`;
             }
             if (Pairs == Width * Height / 2) {
                 setTimeout(EndGame, 200);
@@ -209,6 +224,7 @@
             Points -= 20;
             Points = Points < 0 ? 0 : Points;
             PointsDiv.innerHTML = `Pontszám:${Points}/1000`;
+            document.cookie = `points=${Points}`;
             for (y = 0; y < PlayButtons.length; y++){
                 for (x = 0; x < PlayButtons[y].length; x++){
                     PlayButtons[y][x].children[0].flippable = false;
@@ -230,11 +246,15 @@
     }
 
     function EndGame(){
+        fetch("savePoints.php", {
+            method: "POST",
+        })
+        .then(response => response.text())
+        .then(data => console.log(data))
+        .catch(error => console.error("Error:", error));
+
         alert("Nyertél! ");
         RestartBtn.style.visibility = "visible";
-        <?php 
-            
-        ?>;
     }
 
     function Restart(){
@@ -247,8 +267,85 @@
         Container.style.visibility = "hidden";
         RestartBtn.style.visibility = "hidden";
         PointsDiv.style.visibility = "hidden";
+        playing = false;
     }
 
-
+    function GetImages(sources){
+        sources["blocks"] = "<?php
+        $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
+        $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'blocks'");
+        $database->close();
+        $i = 0;
+        while ($row = $asd->fetch_assoc()) {
+            $i++;
+            if ($i == 24) { // a képek száma
+                echo "data:image/jpeg;base64," . base64_encode($row['image']);
+            } else {
+                echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
+            }
+        }
+        ?>".split("_");
+        sources["foods"] = "<?php
+        $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
+        $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'foods'");
+        $database->close();
+        $i = 0;
+        while ($row = $asd->fetch_assoc()) {
+            $i++;
+            if ($i == 24) { // a képek száma
+                echo "data:image/jpeg;base64," . base64_encode($row['image']);
+            } else {
+                echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
+            }
+        }
+        ?>".split("_");
+        sources["items"] = "<?php
+        $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
+        $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'items'");
+        $database->close();
+        $i = 0;
+        while ($row = $asd->fetch_assoc()) {
+            $i++;
+            if ($i == 24) { // a képek száma
+                echo "data:image/jpeg;base64," . base64_encode($row['image']);
+            } else {
+                echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
+            }
+        }
+        ?>".split("_");
+        sources["mobs"] = "<?php
+        $database = mysqli_connect("localhost", "root", null, "kartyamemoria");
+        $asd = $database->query("SELECT * FROM kartyamemoria.images WHERE theme = 'mobs'");
+        $database->close();
+        $i = 0;
+        while ($row = $asd->fetch_assoc()) {
+            $i++;
+            if ($i == 24) { // a képek száma
+                echo "data:image/jpeg;base64," . base64_encode($row['image']);
+            } else {
+                echo "data:image/jpeg;base64," . base64_encode($row['image']) . "_";
+            }
+        }
+        ?>".split("_");
+    }
 </script>
+<?php 
+    // $database = mysqli_connect("localhost", "root", null, "mysql");
+
+    // $database->query("CREATE DATABASE IF NOT EXISTS kartyamemoria CHARACTER SET utf8 COLLATE utf8_general_ci;");
+    // $database->query("CREATE TABLE IF NOT EXISTS kartyamemoria.images(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, theme VARCHAR(100) NOT NULL, image mediumblob NOT NULL);");
+    // $database->query("CREATE TABLE IF NOT EXISTS kartyamemoria.points(name VARCHAR(100) NOT NULL, points INT(11) NOT NULL, date VARCHAR(100) NOT NULL);");
+
+    // foreach (scandir("./projekt/images/images") as $imagedir){
+    //     if ($imagedir != "." && $imagedir != ".."){
+    //         foreach (scandir("./projekt/images/images/$imagedir") as $image){
+    //             if ($image != "." && $image != ".."){
+    //                 $database->query("INSERT INTO kartyamemoria.images (theme, image) VALUES ('$imagedir', LOAD_FILE('I:/II.projekt/projekt/images/images/$imagedir/$image'));");
+    //             }
+    //         }
+    //     }
+    // }
+
+    // $database->close();
+?>
 </html>
